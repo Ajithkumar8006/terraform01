@@ -1,24 +1,35 @@
-provider "google" {
-  credentials = file(var.credentials_file)
-  project     = var.project_id
-  region      = var.region
-}
+trigger:
+- main
 
-resource "google_compute_instance" "vm_instance" {
-  name         = var.vm_name
-  machine_type = var.machine_type
-  zone         = var.zone
+pool:
+  vmImage: 'ubuntu-latest'
 
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-12"
-    }
-  }
+variables:
+  TF_VERSION: '1.6.0'
 
-  network_interface {
-    network       = "default"
-    access_config {}
-  }
+steps:
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: '$(TF_VERSION)'
 
-  tags = ["web", "dev"]
-}
+- checkout: self
+
+- task: DownloadSecureFile@1
+  name: gcpKey
+  inputs:
+    secureFile: 'gcp-key.json'
+
+- script: |
+    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+    terraform init
+  displayName: 'Terraform Init'
+
+- script: |
+    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+    terraform plan -out=tfplan
+  displayName: 'Terraform Plan'
+
+- script: |
+    export GOOGLE_APPLICATION_CREDENTIALS=$(gcpKey.secureFilePath)
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
