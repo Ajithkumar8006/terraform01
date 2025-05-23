@@ -1,30 +1,24 @@
-trigger:
-- main  # Change if needed
+provider "google" {
+  credentials = file(var.credentials_file)
+  project     = var.project_id
+  region      = var.region
+}
 
-pool:
-  vmImage: 'ubuntu-latest'
+resource "google_compute_instance" "vm_instance" {
+  name         = var.vm_name
+  machine_type = var.machine_type
+  zone         = var.zone
 
-variables:
-  TF_VERSION: '1.6.0'  # Use the version you need
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+    }
+  }
 
-steps:
+  network_interface {
+    network       = "default"
+    access_config {}
+  }
 
-# Step 1: Install Terraform
-- task: TerraformInstaller@1
-  inputs:
-    terraformVersion: '$(TF_VERSION)'
-
-# Step 2: Checkout your code
-- checkout: self
-
-# Step 3: Initialize Terraform
-- script: terraform init
-  displayName: 'Terraform Init'
-
-# Step 4: Plan Terraform changes
-- script: terraform plan -out=tfplan
-  displayName: 'Terraform Plan'
-
-# Step 5: Apply Terraform plan
-- script: terraform apply -auto-approve tfplan
-  displayName: 'Terraform Apply'
+  tags = ["web", "dev"]
+}
