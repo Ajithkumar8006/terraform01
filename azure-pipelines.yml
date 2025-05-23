@@ -1,0 +1,30 @@
+trigger:
+- main  # Change if needed
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  TF_VERSION: '1.6.0'  # Use the version you need
+
+steps:
+
+# Step 1: Install Terraform
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: '$(TF_VERSION)'
+
+# Step 2: Checkout your code
+- checkout: self
+
+# Step 3: Initialize Terraform
+- script: terraform init
+  displayName: 'Terraform Init'
+
+# Step 4: Plan Terraform changes
+- script: terraform plan -out=tfplan
+  displayName: 'Terraform Plan'
+
+# Step 5: Apply Terraform plan
+- script: terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
