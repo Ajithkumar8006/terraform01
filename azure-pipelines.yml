@@ -6,10 +6,10 @@ pool:
   vmImage: 'ubuntu-latest'  # or 'windows-latest'
 
 jobs:
-- job: PingGoogle
+- job: PingLoopbackAddress
   displayName: 'Ping Google.com 10 times'
   steps:
   - script: |
-      echo "Pinging google.com 10 times..."
-      ping -c 10 8.8.8.8  # Use 'ping -n 10' on Windows
-    displayName: 'Ping google.com'
+      echo "Pinging loopback address 10 times..."
+      ping -c 10 127.0.0.1  # Use 'ping -n 10' on Windows
+    displayName: 'Ping loopback address'
