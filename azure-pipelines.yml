@@ -11,5 +11,5 @@ jobs:
   steps:
   - script: |
       echo "Pinging google.com 10 times..."
-      ping -c 10 google.com  # Use 'ping -n 10' on Windows
+      ping -c 10 8.8.8.8  # Use 'ping -n 10' on Windows
     displayName: 'Ping google.com'
