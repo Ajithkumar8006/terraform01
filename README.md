@@ -1,99 +1,87 @@
-project_id                = "apigee-test-0002-demo"
-virtual_repository_id     = "virtual-to-dev-artifact-repository"
-
-upstream_project_names    = "apigee-test-0002-demo"
-upstream_repository_names = "client-dev-artifact-reporsitory"
-
-service_account_name        = "dev-ar-reader"
-service_account_display_name = "Dev Artifact Registry Reader"
-
-upstream_policy = "dev-upstream-policy"
-
------
-
-variable "project_id" {
-  description = "GCP project where the virtual repository and service account will be created"
-  type        = string
-  default = "apigee-test-0002-demo"
-}
-
-variable "location" {
-  description = "GCP project location"
-  type        = string
-  default     = "us-central1"
-}
-
-variable "virtual_repository_id" {
-  description = "ID for the virtual Docker repository"
-  type        = string
-}
-
-variable "upstream_project_names" {
-  description = "List of upstream project names"
-  type        = string
-}
-
-variable "upstream_repository_names" {
-  description = "List of upstream repository names"
-  type        = string
-}
-
-variable "service_account_name" {
-  description = "Service account ID to be created (without domain)"
-  type        = string
-}
-
-variable "service_account_display_name" {
-  description = "Display name for the service account"
-  type        = string
-}
-variable "upstream_policy" {
-  type        = string
-  description = "ID of the upstream policy"
-}
------
-
-resource "google_artifact_registry_repository" "upstream_repository" {
-  project       = var.upstream_project_names
-  location      = var.location
-  repository_id = var.upstream_repository_names
-  format        = "DOCKER"
-  description   = "Upstream Docker repository"
-}
+# This Terraform configuration creates a Google Artifact Registry repository with a virtual repository configuration.
+artifact-repositories.tf
 
 resource "google_artifact_registry_repository" "virtual_artifact_repository" {
-  project       = var.project_id
-  location      = var.location
-  repository_id = var.virtual_repository_id
-  description   = "Virtual Docker repository"
-  format        = "DOCKER"
-  mode          = "VIRTUAL_REPOSITORY"
-
-  labels = {
-    goog-terraform-provisioned = "true"
-  }
-
-  virtual_repository_config {
-    upstream_policies {
-      id         = "${var.upstream_policy}"
-      repository = "projects/${var.upstream_project_names}/locations/${var.location}/repositories/${var.upstream_repository_names}"
-      priority   = 20
+    location        = "us-central1"
+    project         = var.project_id
+    repository_id   = "${var.virtual_repository_id}"
+    description     = "Virtual Docker repository"
+    format          = "DOCKER"
+    mode            = "VIRTUAL_REPOSITORY"
+    virtual_repository_config {
+      upstream_policies {
+        id = "gcf-artifacts"
+        repository = "projects/${var.upstream_project_name}/locations/us-central1/repositories/${var.upstream_repository_name}"
+        priority   = 20
+      }
     }
-  }
-
-  depends_on = [google_artifact_registry_repository.upstream_repository]
 }
+sa.tf
 
-----
-
-resource "google_service_account" "ar_service_account" {
-  project      = var.project_id
-  account_id   = var.service_account_name
-  display_name = var.service_account_display_name
-}
+----------
+# Grant ARTIFACT_REGISTRY_READER role to the service account
+# This is required for the service account to access the artifact registry
+# https://cloud.google.com/artifact-registry/docs/access-control#service-account
 
 resource "google_project_iam_member" "artifact_registry_reader_binding" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${google_service_account.ar_service_account.email}"
+  member  = "serviceAccount:${var.test_env_ar_service_account}"
 }
+-----------------
+/vars/test.tfvars
+
+variable "upstream_project_name" {
+  type        = string
+  default     = ""
+  description = "upstream project name"
+}
+
+variable "upstream_repository_name" {
+  type        = string
+  default     = ""
+  description = "upstream repository name"
+}
+
+variable "virtual_repository_id" {
+  type        = string
+  default     = ""
+  description = "virtual repository id"
+}
+
+variable "test_env_ar_service_account" {
+  type        = string
+  default     = ""
+  description = "service account that gets AR reader access"
+}
+
+variable "upstream_project_name2" {
+  type        = string
+  default     = ""
+  description = "upstream project name"
+}
+
+variable "upstream_repository_name2" {
+  type        = string
+  default     = ""
+  description = "upstream repository name"
+}
+
+variable "virtual_repository_id2" {
+  type        = string
+  default     = ""
+  description = "virtual repository id"
+}
+-----------------
+vars/test.tfvars
+
+######### Virtual repositories config parameters #########
+upstream_project_name = "projecttemplate-d" # This is the name of the upstream project
+upstream_repository_name = "gcf-artifacts" # This is the name of the upstream repository
+virtual_repository_id= "virtual-to-dev-gcf-artifacts" # This is the name of the virtual repository
+## upstream_repository_url = "https://artifactregistry.googleapis.com/v1/projects/${upstream_project_name}/locations/us-central1/repositories/${upstream_repository_name}" # This is the URL of the upstream repository
+## upstream_repository_id = "projects/${upstream_project_name}/locations/us-central1/repositories/${upstream_repository_name}" # This is the ID of the upstream repository
+##### virtual repository -2  config parameters #####
+upstream_project_name2 = "projecttemplate-d" # This is the name of the upstream project
+upstream_repository_name2 = "artifact-repository" # This is the name of the upstream repository
+virtual_repository_id2= "vr-dev-artifact-repository" # This is the name of the virtual repository
