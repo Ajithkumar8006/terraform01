@@ -2,7 +2,7 @@ variable "credentials_file" {
   description = "Path to the GCP service account key JSON file"
   type        = string
 }
-#test
+
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
