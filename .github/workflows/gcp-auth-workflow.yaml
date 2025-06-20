@@ -1,0 +1,42 @@
+name: GCP Auth Workflow
+
+on:
+  push:
+    branches:
+      - main  # or any branch you want
+  workflow_dispatch:  # allows manual triggering
+
+jobs:
+  gcp-auth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker to use Artifact Registry
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Pull Docker Image from Artifact Registry
+        run: |
+          docker pull us-central1-docker.pkg.dev/apigee-test-0002-demo/my-artifact-repo/hello-world-image:latest
+
+      - name: List Pulled Docker Image
+        run: |
+          echo "Pulled image:"
+          docker images | grep hello-world-image || echo "Image not found"
+
+      - name: Gcloud Auth List
+        run: |
+          gcloud auth list
