@@ -1,0 +1,17 @@
+name: Deploy via GCP Impersonation
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/gcp-auth-reusable.yml  # Adjust if it's in another repo or path
+
+    with:
+      workload_identity_provider: "projects/741169614600/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+      service_account_email: "github-actions-deployer@apigee-test-0002-demo.iam.gserviceaccount.com"
+      project_id: "apigee-test-0002-demo"
+
+    secrets:
+      gcp_credentials_json: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_JSON }}  # Optional for some methods, required for legacy OIDC flows
