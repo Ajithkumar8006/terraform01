@@ -47,3 +47,9 @@ jobs:
         run: |
           echo "Pulled image:"
           docker images | grep hello-world-image || echo "Image not found"
+          
+      - name: Gcloud Auth List
+        run: |
+          gcloud auth list
+
+
