@@ -1,0 +1,17 @@
+name: Pull and List Artifact Registry Docker Image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  pull-and-list:
+    uses: ./.github/workflows/gcp-auth-reusable.yml
+
+    with:
+      workload_identity_provider: "projects/741169614600/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+      service_account_email: "github-actions-deployer@apigee-test-0002-demo.iam.gserviceaccount.com"
+      project_id: "apigee-test-0002-demo"
