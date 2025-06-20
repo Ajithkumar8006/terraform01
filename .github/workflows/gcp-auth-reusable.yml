@@ -15,7 +15,7 @@ on:
         type: string
     secrets:
       gcp_credentials_json:
-        required: true
+        required: false  # 👈 make it optional
 
 jobs:
   gcp-auth:
