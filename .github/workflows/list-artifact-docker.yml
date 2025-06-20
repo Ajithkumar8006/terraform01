@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   pull-and-list:
-    uses: ./.github/workflows/gcp-auth-reusable.yml
+    uses: ./.gcp-auth-pull-docker-image--reusable.yml
 
     with:
       workload_identity_provider: "projects/741169614600/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
